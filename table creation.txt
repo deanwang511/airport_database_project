@@ -1,0 +1,202 @@
+create table planes (
+planeID int(11) not null auto_increment, 
+seats int(10) not null,
+size varchar(10) not null,
+meal_plan varchar(10) not null,
+max_altitude int(10) not null,
+plane_type varchar(10) not null,
+fuel_capacity int(10) not null,
+airlineID int(11) not null,
+primary key(planeID)
+);
+
+create table p_employee (
+p_employeeID int(11) not null auto_increment, 
+salary int(10) not null,
+job_type varchar(25) not null,
+fname varchar(15) not null,
+mname varchar(15) not null,
+lname varchar(15) not null,
+age int(10) not null,
+access_level varchar(10) not null,
+planeID int(10) not null,
+airlineID int(11) not null,
+primary key(p_employeeID)
+);
+
+create table airline (
+airlineID int(11) not null auto_increment, 
+name varchar(20) not null,
+number_of_lanes int(10) not null,
+number_of_flights int(10) not null,
+primary key(airlineID)
+);
+
+create table customer (
+customerID int(11) not null auto_increment, 
+fname varchar(15) not null,
+mname varchar(15) not null,
+lname varchar(15) not null,
+seat_number int(10) not null,
+class varchar(20) not null,
+planeID int(10) not null,
+airlineID int(11) not null,
+primary key(customerID)
+);
+
+create table flight_paths (
+pathID int(11) not null auto_increment,
+start_city varchar(20) not null,
+end_city varchar(20) not null,
+durration int(20) not null,
+max_altitude int(10) not null,
+planeID int(11) not null,
+isOverseas boolean not null default 0,
+day date not null,
+primary key(pathID)
+);
+
+
+create table airport (
+airportID int(11) not null auto_increment,
+laneID varchar(20) not null,
+day date not null,
+primary key(airportID)
+);
+
+create table operational_Hours (
+day date not null,
+holiday boolean not null,
+open_hours varchar(10) not null,
+closing_time varchar(10) not null,
+day_of_week varchar(10) not null,
+primary key(day)
+);
+
+create table lane (
+laneID int(11) not null auto_increment,
+plane_type varchar(20) not null,
+slot_number int(10) not null,
+primary key(laneID)
+);
+
+create table a_employee (
+a_employeeID int(11) not null auto_increment, 
+salary int(10) not null,
+job_type varchar(25) not null,
+fname varchar(15) not null,
+mname varchar(15) not null,
+lname varchar(15) not null,
+age int(10) not null,
+access_level varchar(10) not null,
+airlineID int(11) not null,
+primary key(a_employeeID)
+);
+
+describe planes;
+describe p_employee;
+describe airline;
+describe customer;
+describe flight_paths;
+describe airport;
+describe operational_Hours;
+describe lane;
+describe a_employee;
+
+
+create table users (
+lname varchar(10) not null,
+fname varchar(10) not null,
+loginid varchar(11) not null
+);
+
+TRUNCATE TABLE a_employee;
+TRUNCATE TABLE airline;
+TRUNCATE TABLE airport;
+TRUNCATE TABLE customer;
+TRUNCATE TABLE flight_paths;
+TRUNCATE TABLE lane;
+TRUNCATE TABLE operational_Hours;
+TRUNCATE TABLE p_employee;
+TRUNCATE TABLE planes;
+TRUNCATE TABLE users;
+
+Select salary, age 
+
+from a_employee e, airport a, operational_Hours h, lane l , flight_paths f 
+
+where 
+
+e.airlineID = a.airportID and 
+a.day = h.day and 
+a.laneID = l.laneID and 
+h.day = f.day and 
+e.salary < 65000 and 
+age < 35 and 
+f.day = "2020-11-10" and 
+l.laneID = 4 
+limit 5;
+
+
+insert into flight_paths values (6,'Our Airport City','London',7,23928,4,1,'2020-11-10');
+insert into a_employee values (7,20000,'Assistant worker','John','A','Heinmane',20,2,5);
+insert into p_employee values (1,596881,'Senior worker','Mae','B','Trent',36,1,4,1);
+insert into p_employee values (2,307313,'Associate worker','Tonita','E','Trent',37,1,4,2);
+insert into p_employee values (3,11809,'Associate worker','Carisa','D','Zeng',30,3,4,3);
+
+insert into operational_Hours values ('2020-11-10',0,7,23,1);
+
+Select fname, mname, lname, salary, age 
+
+from a_employee e, airport a, operational_Hours h, lane l , flight_paths f 
+
+where 
+
+e.airlineID = a.airportID and 
+h.day = f.day and 
+e.salary <= 65000 and 
+age < 35 and 
+f.day = "2020-11-10" and 
+l.laneID = 4;
+
+Out of all employees who is authorized with access level 3.
+
+
+select oh.day
+from p_employee pe, operational_Hours oh, flight_paths fp, planes p
+where 
+oh.day = fp.day and 
+p.planeID = fp.planeID and
+pe.planeID = fp.planeID and 
+oh.day = fp.day and 
+oh.open_hours != 0
+group by oh.day;
+
+select fname, mname, lname, f.day
+from p_employee pe, operational_Hours oh, flight_paths fp, planes p,
+(select oh.day
+from p_employee pe, operational_Hours oh, flight_paths fp, planes p
+where 
+oh.day = fp.day and 
+p.planeID = fp.planeID and
+pe.planeID = fp.planeID and
+oh.open_hours != 0
+group by oh.day) f
+where f.day = fp.day and p.planeID = fp.planeID and pe.planeID = p.planeID
+group by fname, mname, lname, f.day;
+
+select *, count(*)
+from
+(select fname, mname, lname, f.day
+from p_employee pe, operational_Hours oh, flight_paths fp, planes p,
+(select oh.day
+from p_employee pe, operational_Hours oh, flight_paths fp, planes p
+where 
+oh.day = fp.day and 
+p.planeID = fp.planeID and
+pe.planeID = fp.planeID and
+oh.open_hours != 0
+group by oh.day) f
+where f.day = fp.day and p.planeID = fp.planeID and pe.planeID = p.planeID
+group by fname, mname, lname, f.day) u
+group by fname, mname, lname, day;
